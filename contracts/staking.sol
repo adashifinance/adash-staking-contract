@@ -37,6 +37,11 @@ contract Staking is ReentrancyGuard, Ownable {
     // Mapping of address to Staker info
     mapping(address => Staker) internal stakers;
 
+    event RewardUpdated(uint256 newReward);
+    event withdrawn(address indexed user, uint256 amount);
+    event RewardClaimed(address indexed user, uint256 reward);
+    event Staked(address indexed user, uint256 amount, uint256 timestamp);
+
     constructor(address _token, uint256 _rewardsPerYear){
         token = IERC20(_token);
         rewardsPerYear = _rewardsPerYear;
@@ -64,6 +69,8 @@ contract Staking is ReentrancyGuard, Ownable {
             stakers[msg.sender].timeOfLastUpdate = block.timestamp;
         }
         token.safeTransferFrom(msg.sender, address(this), _amount);
+
+        emit Staked(msg.sender, _amount, block.timestamp);
     }
 
     // Compound the rewards and reset the last time of update for Deposit info
@@ -77,6 +84,8 @@ contract Staking is ReentrancyGuard, Ownable {
         stakers[msg.sender].unclaimedRewards = 0;
         stakers[msg.sender].deposited.add(rewards);
         stakers[msg.sender].timeOfLastUpdate = block.timestamp;
+
+        emit Staked(msg.sender, rewards, block.timestamp);
     }
 
     // transfer rewards for msg.sender
@@ -86,6 +95,8 @@ contract Staking is ReentrancyGuard, Ownable {
         stakers[msg.sender].unclaimedRewards = 0;
         stakers[msg.sender].timeOfLastUpdate = block.timestamp;
         token.safeTransfer(msg.sender, rewards);
+
+        emit RewardClaimed(msg.sender, rewards);
     }
 
     // Withdraw specified amount of staked tokens
@@ -99,6 +110,8 @@ contract Staking is ReentrancyGuard, Ownable {
         stakers[msg.sender].timeOfLastUpdate = block.timestamp;
         stakers[msg.sender].unclaimedRewards = _rewards;
         token.safeTransfer(msg.sender, _amount);
+
+        emit withdrawn(msg.sender, _amount);
     }
 
     // Withdraw all stake and rewards the msg.sender
@@ -110,6 +123,8 @@ contract Staking is ReentrancyGuard, Ownable {
         stakers[msg.sender].timeOfLastUpdate = 0;
         uint256 _amount = _rewards + _deposit;
         token.safeTransfer(msg.sender, _amount);
+
+        emit withdrawn(msg.sender, _amount);
     }
 
     // Function useful for fron-end that returns user stake and rewards by address
@@ -147,7 +162,8 @@ contract Staking is ReentrancyGuard, Ownable {
         return (((block.timestamp.sub(stakers[_staker].timeOfLastUpdate)).mul(stakers[_staker].deposited).mul(rewardsPerYear)) / 10000);
     }
 
-    function setRewardDuration(uint256 _rewardDuration) external onlyOwner{
-        rewardsPerYear = _rewardDuration;
+    function setReward(uint256 _reward) external onlyOwner{
+        rewardsPerYear = _reward;
+        emit RewardUpdated(_reward);
     }
 }
