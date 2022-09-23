@@ -1,3 +1,18 @@
+
+# Adashi Staking Contract
+
+
+### Staking Functionalities:
+
+1. Deposit Token and gain a fixed APR calculated daily.
+1. Compoundig of rewards.
+1. rewards claiming.
+1. Withdraw a part of deposit.
+1. Withdraw all(your deposit + rewards).
+1. fixed APR.
+1. fixed compounding frequency limit.
+
+
 # Advanced Sample Hardhat Project
 
 This project demonstrates an advanced Hardhat use case, integrating other tools commonly used alongside Hardhat in the ecosystem.
